@@ -11,6 +11,9 @@ int main(void){
  puts("PASS automatic fetch occurs only when due and connected.");
  assert(schedule_should_fetch(&s,2*SECOND,true,true));schedule_failed(&s,original);assert(!schedule_should_fetch(&s,original+SECOND,true,false));assert(schedule_should_fetch(&s,original+SECOND,true,true));assert(schedule_should_fetch(&s,original+300*SECOND,true,false));
  puts("PASS failure backoff and manual override remain separate.");
+ schedule_init(&s,0,epoch,true,epoch,3600);original=s.due_us;schedule_failed(&s,100*SECOND);
+ assert(s.due_us==original);assert(!schedule_should_fetch(&s,400*SECOND,true,false));assert(schedule_should_fetch(&s,400*SECOND,true,true));assert(schedule_should_fetch(&s,original,true,false));
+ puts("PASS an early manual failure keeps the original automatic deadline; five minutes alone does not make it due.");
  schedule_succeeded(&s,20*SECOND,epoch+1000);assert(s.due_us==3620*SECOND);assert(s.last_success_epoch==epoch+1000);
  schedule_init(&s,3*SECOND,epoch+1300,true,s.last_success_epoch,3600);assert(schedule_remaining(&s,3*SECOND)==3300);
  puts("PASS successful fetch starts one hour; reboot restores the remaining 55 minutes.");

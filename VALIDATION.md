@@ -32,3 +32,7 @@ Version 1.4.0 removes the reconnect handler's unconditional new-fact request. Th
 Hardware scheduling verification for 1.4.0: a saved deadline remained partially elapsed across restart (2,999 seconds remaining before, 2,854 after). A real Wi-Fi reconnect updated connectivity without triggering an early fact fetch. No premature interval-triggered download appeared during the observation. A full one-hour real-time soak remains unperformed.
 
 Version 1.4.1 replaces the table heading, yellow accent and dotted rules with a plain grid. Labels and values use the same 20-pixel glyph atlas; long values wrap without shrinking to 14 pixels. Existing sanitizer-backed layout, summary and details checks passed for the supplied examples.
+
+## Published-source README audit
+
+The published initial source commit was exported without private files or Git metadata and built with the README's ESP-IDF set-target/build commands. The documented esptool 4.13.0 merge command produced a 4 MB factory image with blank settings. This audit did not flash or change the badge. Scheduler and projection checks passed from that export, and an additional regression confirms that an early failed manual fetch retains the original automatic deadline. README wording now distinguishes observed behavior, source-extraction heuristics, fresh-clone setup requirements and timing limits.

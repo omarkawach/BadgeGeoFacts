@@ -1,37 +1,37 @@
 # Badge GeoFacts
 
-Geography, GIS and Earth-observation field notes for the **Espruino ESP32-C3 ePaper Badge, production revision 1.2**. A new online entry appears every **hour**, with a bitmap world map marking the subject's location.
+Geography, GIS and Earth-observation field notes for the **Espruino ESP32-C3 ePaper Badge, production revision 1.2**. It attempts to fetch a new online entry every **hour** when connected, with a bitmap world map marking the subject's location.
 
 ![Example display](previews/uyuni.png)
 
 ## What appears on the badge
 
-- A warm gold **GeoFacts** header with a connected/disconnected **Wi-Fi icon** and **“New fact every hour.”**
-- The cadence label is fixed. There is no countdown and no timer-driven screen flashing; the panel refreshes when the fact or setup view changes.
+- A warm gold **GeoFacts** header with a **Wi-Fi icon** and **“New fact every hour.”** The icon reflects connectivity at the last screen refresh; it is not an instant or power-status indicator.
+- The cadence label is fixed. There is no ticking countdown. Full panel refreshes occur for fact/setup changes and some Wi-Fi state changes; reconnecting can redraw the same fact without advancing it.
 - A readable IBM Plex Sans font with complete glyph bounds, Latin accents, degree signs and normal W/w characters.
-- One or two **complete source sentences**, selected to fit the actual display. Parenthetical pronunciations, citations and duplicate unit conversions are removed. Sentences are never cut off or replaced by an ellipsis. An entry with no complete sentence that fits is skipped.
-- A thin-bordered world bitmap top-aligned with the fact title and a red location marker. Beneath it, a plain high-contrast table aligns labels and values with solid black row and column dividers. It includes a country/region when the source is unambiguous, up to two explicit measurements, coordinates, projection, datum and source.
-- Measurements come from the article already downloaded, so the table adds no network requests. Original units and qualifiers such as “approximately” or “up to” are preserved. Missing or ambiguous measurements are omitted. The table uses one readable text size for labels and values, with no decorative title or accent bar. Long values wrap rather than shrink; low-priority metadata may be omitted only when needed to keep the text readable. Button instructions and connection URLs stay off the normal fact card.
+- One or two **complete source sentences**, selected to fit the actual display. Parenthetical and square-bracketed text is removed, including many pronunciations, citations and alternative unit conversions. Sentences are never cut off or replaced by an ellipsis. An entry with no complete sentence that fits is skipped.
+- A thin-bordered world bitmap top-aligned with the fact title and a red location marker. Beneath it, a plain high-contrast table aligns labels and values with solid black row and column dividers. It can include a country/region, up to two extracted measurements, coordinates, projection, datum and source.
+- Measurements come from the article already downloaded, so the table adds no network requests. Recognized units and qualifiers such as “approximately” or “up to” are retained. Country/region matching and measurement labeling are best-effort text rules, not authoritative structured metadata: they can miss or misclassify unusual wording. Consult the linked article for the original context. The table uses one readable text size for labels and values, with no decorative title or accent bar. Long values wrap rather than shrink; low-priority metadata may be omitted only when needed to keep the text readable. Button instructions and connection URLs stay off the normal fact card.
 
-The entries come from current English Wikipedia summaries, fetched over certificate-verified HTTPS from a pool of 80 geographic features and Earth-observation locations. The subject pool eventually repeats. The concise display text is an **extractive summary**, not an AI-generated claim. The local page retains the longer saved excerpt and its source link. No API key or paid model is required.
+The entries come from current English Wikipedia summaries, fetched over certificate-verified HTTPS from a pool of 80 geographic features and Earth-observation locations. The subject pool eventually repeats. The concise display text is an **extractive summary**, not an AI-generated claim. The local page shows the longer saved excerpt (up to 1,799 bytes) and a link to the full source article. No API key or paid model is required.
 
 ## Controls
 
 | Control | Action |
 | --- | --- |
 | Side button | Fetch another fact now. A successful download restarts the one-hour interval. |
-| Rear SHARE | Hold for 3 seconds to open Wi-Fi setup. Tap to close setup and restore saved Wi-Fi. Holding again also closes setup. |
+| Rear SHARE | Hold for 3 seconds to open Wi-Fi setup. Tap to close setup and return to facts, reconnecting to saved Wi-Fi if configured. A tap while already disconnected also retries saved Wi-Fi. Holding again closes setup. |
 | USB | Always available for firmware updates; this app does not require the original conference app's SHARE-to-connect sequence. |
 
-A panel refresh takes about **13 seconds**, plus download time. Slow source requests can take up to 45 seconds before retrying. Several quick presses during an update queue **one additional fetch**, rather than a separate fetch for every press.
+A panel refresh takes about **13 seconds**, plus download time. Each source request allows up to 45 seconds, and one update can try up to four topics. DNS lookup, clock synchronization and retries can make the total update take longer. Several quick presses during an update queue **one additional fetch**, rather than a separate fetch for every press.
 
-When Wi-Fi is unavailable, the badge keeps its last saved fact. Pressing the side button while in setup mode shows that offline fact and map. Hold SHARE to open setup; tap it to leave setup and resume the saved connection.
+When Wi-Fi is unavailable, the badge keeps its last saved fact. If no entry has been cached yet, it shows a built-in Okavango Delta example. Pressing the side button while in setup mode shows that offline fact and map. Hold SHARE to open setup; tap it to leave setup and resume the saved connection.
 
 ## Scheduling
 
-The default interval is **3,600 seconds**, configured once in `main/config.h`. Only an expired interval or an explicit side-button request advances the topic. Wi-Fi reconnection, SHARE setup exit, clock synchronization and reboot do not request a different fact by themselves.
+The default interval is **3,600 seconds**, configured once in `main/config.h`. Only an expired interval or an explicit side-button request advances the topic. Wi-Fi reconnection, SHARE setup exit, clock synchronization and reboot do not force a different fact. If the deadline has already passed, the next connected loop can fetch the overdue entry. First-run initialization without a cached entry also fetches as soon as it can.
 
-Each successful download starts a fresh one-hour interval. A manual fetch restarts that hour. A failed fetch preserves the current entry and retries after five minutes; the side button may retry sooner. The last successful fetch time is saved in NVS so a restart restores the remaining interval after network time becomes available. Without valid saved timing metadata, a cached entry receives a provisional full interval until the clock can be restored.
+Each successful download starts a fresh one-hour interval. A manual fetch restarts that hour. A scheduled fetch failure preserves the current entry and waits five minutes before its next automatic retry. A failed manual fetch does not move the existing automatic deadline, but automatic retries still honor the five-minute backoff; another button press may retry sooner. The last successful fetch time is saved in NVS so a restart restores the remaining interval after network time becomes available. If a valid saved timestamp exists but the clock is not yet set, the badge uses a provisional interval until clock synchronization restores the remaining time. If the saved timestamp itself is missing, the cached entry starts with a full interval from boot.
 
 When upgrading from the previous four-hour build, the last successful fetch time is derived from its saved deadline. The new hour is measured from that same fetch, so an already-overdue entry may update soon after upgrade.
 
@@ -43,11 +43,11 @@ When upgrading from the previous four-hour build, the last successful fetch time
 4. Enter the exact name and password of a **2.4 GHz personal Wi-Fi network**, then click **Save and connect**.
 5. The setup network closes while the badge connects. Rejoin your usual Wi-Fi. The badge fetches a fact and refreshes the panel.
 
-The ESP32-C3 uses **either setup access-point mode or client mode**, following the restriction in Espruino's own implementation. It never leaves both active during a connection attempt. The app checks that the Wi-Fi driver accepted the saved settings, makes three connection attempts, and allows time for DHCP. If a configured network is temporarily unavailable, the badge keeps the saved fact visible and retries quietly after 30 seconds; it does not replace the fact with setup instructions. Hold SHARE when you actually want to edit settings.
+This app uses **either setup access-point mode or client mode**, following Espruino's ESP32-C3 connection handling; this is an application choice, not a claim that the chip cannot support combined modes. It never leaves both active during a connection attempt. The app checks that the Wi-Fi driver accepted the saved settings, makes three connection attempts, and allows time for DHCP. If a configured network is temporarily unavailable, the badge keeps the saved fact visible and retries quietly after 30 seconds; it does not replace the fact with setup instructions. Hold SHARE when you actually want to edit settings.
 
 “Saved” or “Credentials uploaded” means the settings were written, not that the network accepted the password. A `4WAY_HANDSHAKE_TIMEOUT` is a failure during the WPA2 password exchange. Compare the password with a device already connected to the same network before assuming incompatibility.
 
-Enterprise username/password authentication and browser-based captive portals are not implemented. Credentials are stored only in the badge's local NVS flash. No credentials are compiled into the distributed firmware. The temporary setup network uses WPA2, changes its password after restart, and closes after 15 minutes if left unused. On timeout, the badge restores its saved Wi-Fi automatically. A tap of SHARE also exits setup and restores the saved connection. USB reconnects independently and never requires holding SHARE in this firmware.
+Enterprise username/password authentication and browser-based captive portals are not implemented. Credentials are stored only in the badge's local NVS flash. No credentials are compiled into the distributed firmware. The temporary setup network uses WPA2, changes its password after restart, and closes 15 minutes after it is opened, even if a client is still connected. On timeout, the badge restores its saved Wi-Fi automatically. A tap of SHARE also exits setup and restores the saved connection. USB reconnects independently and never requires holding SHARE in this firmware.
 
 The badge contacts `en.wikipedia.org`, uses network-provided DNS with `1.1.1.1` as a fallback, and synchronizes its clock through `pool.ntp.org` / `time.cloudflare.com` before validating HTTPS certificates. It keeps Wi-Fi and USB awake and is intended for **USB-powered use**; battery runtime has not been optimized.
 
@@ -87,9 +87,11 @@ An old image can remain visible after reset because ePaper retains its pixels. A
 
 ### Terminal
 
-These examples use **esptool 4.13.0** syntax. Esptool 5 uses hyphenated command/option names.
+These macOS/Linux shell examples use **esptool 4.13.0** syntax. Esptool 5 uses hyphenated command/option names. Replace `PORT` with the badge's serial device. Create a local environment before installing the pinned utility:
 
 ```sh
+python3 -m venv .venv
+. .venv/bin/activate
 python -m pip install esptool==4.13.0
 
 # Full installation; replaces saved settings/data.
@@ -103,9 +105,13 @@ python -m esptool --chip esp32c3 --port PORT --baud 460800 \
 
 ## Backup and restore
 
-A full device backup may contain photos, contacts, Wi-Fi credentials and other saved data. **Keep backups under `private/backups/` and never publish them.** This directory is ignored by `.gitignore`.
+A full device backup may contain photos, contacts, Wi-Fi credentials and other saved data. **Keep backups under `private/backups/` and never publish them.** Use the esptool environment from the Terminal section above. This directory is ignored by `.gitignore` and is not created by a fresh clone. Create it before reading flash. Use new filenames if a backup already exists; never overwrite the original-state backup with a later modified state.
 
 ```sh
+# Create local-only backup directories; do not overwrite an existing original.
+mkdir -p private/backups
+chmod 700 private private/backups
+
 # Read all 4 MB before replacing another badge's firmware.
 python -m esptool --chip esp32c3 --port PORT --baud 460800 \
   --before usb_reset --after hard_reset \
@@ -127,7 +133,7 @@ Verify recovery backups with two independent reads and keep their checksums priv
 
 ## Build
 
-Use **ESP-IDF v5.5.1**, ESP32-C3, and RISC-V GCC **14.2.0_20241119**. From this directory, after activating official ESP-IDF:
+Use **ESP-IDF v5.5.1**, ESP32-C3, and RISC-V GCC **14.2.0_20241119**. From this directory, after activating official ESP-IDF (its Python environment must provide the esptool 4.x syntax used below):
 
 ```sh
 idf.py set-target esp32c3
@@ -140,6 +146,8 @@ python -m esptool --chip esp32c3 merge_bin \
   0x8000 build/partition_table/partition-table.bin \
   0x10000 application.bin
 ```
+
+A clean build and merge were checked with the pinned ESP-IDF/toolchain. Byte-for-byte reproduction of the checked-in binaries across other environments is not guaranteed. If you intend to commit rebuilt images or changed source, update the corresponding hashes in `release.json` and `SHA256SUMS` before running the publication guard; rebuilding alone does not refresh those records.
 
 | File | Responsibility |
 | --- | --- |
@@ -162,9 +170,9 @@ python tools/check_display.py
 python tools/check_schedule.py
 ```
 
-For numerical verification against PROJ, install `pyproj` and run `python tools/check_projection.py`. The test checks control points including poles and the antimeridian.
+For numerical verification against PROJ, run `python tools/check_projection.py` after installing `requirements-dev.txt` (which already includes `pyproj`). The test checks control points including poles and the antimeridian.
 
-`tools/generate_assets.py` regenerates the Equal Earth bitmap from [Natural Earth's 1:110m land GeoJSON](https://github.com/nvkelso/natural-earth-vector/blob/master/geojson/ne_110m_land.geojson). Preview fixtures include the source URLs for attribution. The checked-in assets are sufficient to build without downloading additional visual assets.
+`tools/generate_assets.py` takes a local land GeoJSON path as its required argument, for example `python tools/generate_assets.py /path/to/ne_110m_land.geojson`. It regenerates the Equal Earth land bitmap, without graticules or country borders, from [Natural Earth's 1:110m land GeoJSON](https://github.com/nvkelso/natural-earth-vector/blob/master/geojson/ne_110m_land.geojson). Preview fixtures include the source URLs for attribution. The checked-in assets are sufficient to build without downloading additional visual assets.
 
 ## Original Espruino software
 
