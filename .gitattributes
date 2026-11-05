@@ -1,0 +1,17 @@
+* text=auto
+*.c text eol=lf
+*.h text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.txt text eol=lf
+.githooks/* text eol=lf
+*.bin binary
+*.png binary
+*.ttf binary
+
+# Preserve vendored license notices without whitespace rewrites.
+LICENSES/** -whitespace
+MPL-2.0.txt -whitespace
+assets/fonts/OFL.txt -whitespace
+assets/PROJ-COPYING.txt -whitespace

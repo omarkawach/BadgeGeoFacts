@@ -1,0 +1,45 @@
+{
+  "name": "GeoFacts",
+  "version": "1.4.1",
+  "target": "esp32c3",
+  "hardware_revision": "1.2",
+  "display": [
+    800,
+    480
+  ],
+  "flash_bytes": 4194304,
+  "flash_address": "0x0",
+  "interval_seconds": 3600,
+  "source": "Wikipedia REST page summary",
+  "topic_count": 80,
+  "idf": "5.5.1",
+  "buttons": {
+    "side_gpio": 3,
+    "share_gpio": 2
+  },
+  "firmware_sha256": "ca7cbcea40078abe5f3eeba3888d3de9b8df478d9a261a9161e8366f2b6b50aa",
+  "header": "gold; black text",
+  "cadence_label": "New fact every hour",
+  "map_projection": "Equal Earth",
+  "coordinate_reference": "WGS84",
+  "summary": "Up to two complete source sentences, validated against the actual layout",
+  "font": "IBM Plex Sans, SIL OFL 1.1",
+  "application_sha256": "02e1f615eeb32b1462d0ed6f4f1bab3daefb037c8f1670b71e3b02669b1eccaf",
+  "details_table": "Adaptive country/region, up to two sourced measurements, coordinates, projection, datum and attribution",
+  "projected_crs": "EPSG:8857",
+  "projection_reference_test": {
+    "pyproj": "3.6.1",
+    "proj": "9.3.0",
+    "control_points": 130,
+    "tolerance_metres": 0.001
+  },
+  "share_actions": {
+    "tap": "Exit setup and restore saved Wi-Fi",
+    "hold_3_seconds": "Toggle Wi-Fi setup",
+    "setup_timeout": "Restore saved Wi-Fi"
+  },
+  "map_border": "1 px black neatline, 2 px interior padding",
+  "graticules": false,
+  "schedule_policy": "Only interval expiry or manual side-button request advances the fact; reconnects do not reset or request; reboot restores remaining time",
+  "details_table_style": "Plain black grid; 20-pixel labels and values; no title, accent bar or dotted rules; long values wrap"
+}

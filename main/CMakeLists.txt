@@ -1,0 +1,1 @@
+idf_component_register(SRCS "app_main.c" "display.c" "summary.c" "details.c" "projection.c" "scheduler.c" "epaper.c" INCLUDE_DIRS "." REQUIRES esp_driver_gpio esp_driver_spi esp_timer esp_wifi esp_http_server esp_http_client esp_netif nvs_flash json mbedtls lwip esp_system)
